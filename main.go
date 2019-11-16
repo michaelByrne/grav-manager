@@ -42,6 +42,18 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	r.HandleFunc("/account/{email}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		email := vars["email"]
+
+		acct, err := svc.GetAccountByEmail(email)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+
+		respondWithJSON(w, http.StatusOK, map[string]interface{}{"account": acct})
+	})
+
 	r.HandleFunc("/count/{account_id}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id := vars["account_id"]
@@ -82,13 +94,13 @@ func main() {
 	r.Use(amw.AuthMiddleware)
 
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3001"},
-		AllowedHeaders: []string{"Authorization"},
+		AllowedOrigins:   []string{"http://localhost:3001"},
+		AllowedHeaders:   []string{"Authorization"},
 		AllowCredentials: true,
 		//Debug: true,
-		})
-		
-	handler := c.Handler(r)	
+	})
+
+	handler := c.Handler(r)
 
 	fmt.Println("running server on 8443")
 	err = http.ListenAndServeTLS(":8443", "ca-cert.pem", "ca-key.pem", handler)
