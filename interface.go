@@ -12,12 +12,14 @@ type AccountService interface {
 	GetUserCount(id string) (int, error)
 	GetAccount(id string) (Account, error)
 	GetUsers(accountID string) ([]User, error)
+	GetAccountByEmail(emails string) (Account, error)
 }
 
 // Account is an account
 type Account struct {
 	ID    string `json:"id"`
 	Limit int64  `json:"limit"`
+	Email string `json:"email"`
 }
 
 // User is a user

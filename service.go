@@ -39,7 +39,7 @@ func (a *accountService) RegisterUser(user User) error {
 		return err
 	}
 
-	if int64(count)+1 >= acct.Limit {
+	if int64(count)+1 > acct.Limit {
 		return errors.New("user quota reached")
 	}
 
@@ -91,6 +91,30 @@ func (a *accountService) GetUsers(accountID string) ([]User, error) {
 		outUsers = append(outUsers, currUser)
 	}
 	return outUsers, nil
+}
+
+// GetAccount fetches an account from the db based on an email
+func (a accountService) GetAccountByEmail(email string) (Account, error) {
+
+	var account []*struct {
+		Id    string
+		Limit int64
+		Email string
+	}
+	err := a.db.Query(`SELECT * FROM account WHERE email = $1`, email).Rows(&account)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(account) == 0 {
+		return Account{}, errors.New("account not found")
+	}
+
+	return Account{
+		ID:    account[0].Id,
+		Limit: account[0].Limit,
+		Email: account[0].Email,
+	}, nil
 }
 
 // GetAccount fetches an account from the db based on an id
